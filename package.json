@@ -1,0 +1,27 @@
+{
+  "name": "nodejs-keycloak",
+  "version": "1.0.3",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx tsc",
+    "start": "ts-node src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/jsonwebtoken": "^9.0.6",
+    "axios": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.1.0",
+    "ts-node": "10.7.0",
+    "typescript": "^5.5.4"
+  },
+  "files": [
+    "dist"
+  ]
+}
