@@ -105,31 +105,54 @@ export class KeycloakClient {
   }
 
   async getAccessToken() {
-    await createChain([new RequestAccessTokenFromRefreshToken(this)]).handle(
-      {}
-    );
-
+    const { success, message } = await createChain([
+      new RequestAccessTokenFromRefreshToken(this),
+    ]).handle({});
+    if (!success) {
+      throw new Error(message || "Failed to get access token");
+    }
     return this.access_token;
   }
 
   async getRefreshToken() {
-    await createChain([new RequestAccessAndRefreshToken(this)]).handle({});
+    const { success, message } = await createChain([
+      new RequestAccessAndRefreshToken(this),
+    ]).handle({});
+    if (!success) {
+      throw new Error(message || "Failed to get refresh token");
+    }
 
     return this.refresh_token;
   }
 
   async getCerts() {
-    await createChain([new FetchCerts(this)]).handle({});
+    const { success, message } = await createChain([
+      new FetchCerts(this),
+    ]).handle({});
+    if (!success) {
+      throw new Error(message || "Failed to get certs");
+    }
     return this.certs;
   }
 
   async getJwtPublicKey() {
-    await createChain([new GetJwtPublicKey(this)]).handle({});
+    const { success, message } = await createChain([
+      new GetJwtPublicKey(this),
+    ]).handle({});
+    if (!success) {
+      throw new Error(message || "Failed to get jwt public key");
+    }
     return this.jwt_public_key;
   }
 
   async verifyJwt(token: string) {
-    return await createChain([new VerifyJwt(this)]).handle({ token });
+    const { success, message, data } = await createChain([
+      new VerifyJwt(this),
+    ]).handle({ token });
+    if (!success) {
+      throw new Error(message || "Could not verify jwt");
+    }
+    return data.decoded;
   }
 
   async createRealm() {
