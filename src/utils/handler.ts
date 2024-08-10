@@ -7,7 +7,7 @@ export abstract class BaseHandler {
     success: boolean;
     code: number;
     data: any;
-    message: string | null;
+    message: string | undefined;
   }> {
     if (this.nextHandler) {
       return await this.nextHandler.handle(params);
@@ -21,7 +21,7 @@ export abstract class BaseHandler {
     success: boolean;
     code: number;
     data: any;
-    message: string | null;
+    message: string | undefined;
   }>;
 }
 

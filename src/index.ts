@@ -1,10 +1,9 @@
-import {
-  FetchCerts,
-  GetJwtPublicKey,
-  RequestAccessAndRefreshToken,
-  RequestAccessTokenFromRefreshToken,
-  VerifyJwt,
-} from "./handler/keycloak.handler";
+
+import { FetchCertsHandler } from "./handler/keycloak/fetchCerts.handler";
+import { GetJwtPublicKeyHandler } from "./handler/keycloak/getJwtPublicKey.handler";
+import { CheckAccessTokenExpiryHandler, RequestAccessTokenFromRefreshTokenHandler } from "./handler/keycloak/requestAccessToken.handler";
+import { CheckRefreshTokenExpiredHandler, RequestAccessAndRefreshTokenHandler } from "./handler/keycloak/requestRefreshToken.handler";
+import { VerifyJwtHandler } from "./handler/keycloak/verifyJwt.handler";
 import { createChain } from "./utils/handler";
 
 export class KeycloakClient {
@@ -14,7 +13,6 @@ export class KeycloakClient {
   private password: string | undefined;
   private client_id: string | undefined;
 
-  public init_success: boolean = false;
   private access_token: string | undefined;
   private refresh_token: string | undefined;
   private expires_in: number = 0;
@@ -22,14 +20,15 @@ export class KeycloakClient {
   private access_token_init = 0;
   private refresh_token_init = 0;
 
-  public jwt_algo: string = "RS256";
+  private jwt_algo: string = "RS256";
   private certs: any[] = [];
   private certs_fetched_at = 0;
   private certs_fetch_wait_time = 1800;
   private jwt_public_key: string = "";
+  
   constructor(params: any) {
     this.realm = params.realm;
-    this.url = params.url;
+    this.url = params.serverUrl;
     this.username = params.username;
     this.password = params.password;
     this.client_id = params.client_id;
@@ -37,12 +36,6 @@ export class KeycloakClient {
     if (params.jwtAlgo) {
       this.jwt_algo = params.jwtAlgo;
     }
-  }
-
-  async init() {
-    return await createChain([new RequestAccessAndRefreshToken(this)]).handle(
-      {}
-    );
   }
 
   getKeycloakUrl() {
@@ -79,6 +72,12 @@ export class KeycloakClient {
     this.refresh_token = token;
   }
 
+  getJwtAlgo(){
+    return this.jwt_algo
+  }
+  setJwtAlgo(alog: string){
+    this.jwt_algo = alog
+  }
   setCertFetchedAt(fetched_at: number) {
     this.certs_fetched_at = fetched_at;
   }
@@ -106,7 +105,8 @@ export class KeycloakClient {
 
   async getAccessToken() {
     const { success, message } = await createChain([
-      new RequestAccessTokenFromRefreshToken(this),
+      new CheckAccessTokenExpiryHandler(this),
+      new RequestAccessTokenFromRefreshTokenHandler(this),
     ]).handle({});
     if (!success) {
       throw new Error(message || "Failed to get access token");
@@ -116,7 +116,8 @@ export class KeycloakClient {
 
   async getRefreshToken() {
     const { success, message } = await createChain([
-      new RequestAccessAndRefreshToken(this),
+      new CheckRefreshTokenExpiredHandler(this),
+      new RequestAccessAndRefreshTokenHandler(this),
     ]).handle({});
     if (!success) {
       throw new Error(message || "Failed to get refresh token");
@@ -127,7 +128,7 @@ export class KeycloakClient {
 
   async getCerts() {
     const { success, message } = await createChain([
-      new FetchCerts(this),
+      new FetchCertsHandler(this),
     ]).handle({});
     if (!success) {
       throw new Error(message || "Failed to get certs");
@@ -137,7 +138,7 @@ export class KeycloakClient {
 
   async getJwtPublicKey() {
     const { success, message } = await createChain([
-      new GetJwtPublicKey(this),
+      new GetJwtPublicKeyHandler(this),
     ]).handle({});
     if (!success) {
       throw new Error(message || "Failed to get jwt public key");
@@ -147,7 +148,7 @@ export class KeycloakClient {
 
   async verifyJwt(token: string) {
     const { success, message, data } = await createChain([
-      new VerifyJwt(this),
+      new VerifyJwtHandler(this),
     ]).handle({ token });
     if (!success) {
       throw new Error(message || "Could not verify jwt");

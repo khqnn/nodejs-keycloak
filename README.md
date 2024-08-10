@@ -17,7 +17,7 @@ npm install nodejs-keycloak
 First, import the package and get the Keycloak class:
 
 ```js
-const { Keycloak } = require("nodejs-keycloak");
+const { KeycloakClient } = require("nodejs-keycloak");
 ```
 
 ### Initializing the Keycloak Instance
@@ -25,7 +25,7 @@ const { Keycloak } = require("nodejs-keycloak");
 Create an instance of the Keycloak class by providing the Keycloak server URL and realm name. Optionally, you can provide a username and password.
 
 ```js
-const keycloak = new Keycloak({
+const keycloak = new KeycloakClient({
   serverUrl: "http://localhost:8080",
   realm: "your-realm",
   client_id: "web-client",
@@ -49,6 +49,17 @@ keycloak
     console.log(error);
   });
 ```
+Or
+```js
+const token = "my-jwt-token";
+try{
+  const decoded = await keycloak.verifyJwt(token)
+  console.log(decoded)
+}
+catch(error){
+  console.log(error)
+}
+```
 
 ## Keycloak API Operations
 
@@ -66,6 +77,16 @@ keycloak
     console.log(error);
   });
 ```
+Or
+```js
+try{
+  const token = await keycloak.getAccessToken()
+  console.log(token)
+}
+catch(error){
+  console.log(error)
+}
+```
 
 ### Get Refresh Token
 
@@ -78,4 +99,14 @@ keycloak
   .catch((error) => {
     console.log(error);
   });
+```
+Or
+```js
+try{
+  const token = await keycloak.getRefreshToken()
+  console.log(token)
+}
+catch(error){
+  console.log(error)
+}
 ```
